@@ -1,0 +1,186 @@
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* ── Page Title ── */
+h2 {
+    color: #ffffff;
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+/* ── Subtitle / Email hint ── */
+body > p:first-of-type {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+body > p:first-of-type strong {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* ── Flash Messages ── */
+.flash {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-left: 4px solid;
+    overflow: hidden;
+    max-height: 100px;
+    opacity: 1;
+    transition: opacity 0.5s ease, max-height 0.5s ease, margin 0.5s ease;
+}
+
+.success { background: #f0fdf4; color: #166534; border-color: #22c55e; }
+.error   { background: #fef2f2; color: #991b1b; border-color: #ef4444; }
+.warning { background: #fffbeb; color: #92400e; border-color: #f59e0b; }
+
+/* ── Card ── */
+form:not([action]) {
+    background: #ffffff;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    padding: 36px 32px 28px;
+}
+
+/* ── Label ── */
+label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+/* ── OTP Input ── */
+input[type="text"] {
+    width: 100%;
+    padding: 14px;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.6em;
+    text-align: center;
+    color: #1a1a2e;
+    background: #f9fafb;
+    border: 1.5px solid #d1d5db;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    /* hide browser number spinners */
+    -moz-appearance: textfield;
+}
+
+input[type="text"]::placeholder {
+    color: #d1d5db;
+    letter-spacing: 0.5em;
+}
+
+input[type="text"]:hover  { border-color: #a5b4fc; }
+input[type="text"]:focus  {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.18);
+}
+
+/* ── Verify Button ── */
+button[type="submit"]:not(.resend) {
+    width: 100%;
+    padding: 13px;
+    margin-top: 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+button[type="submit"]:not(.resend):hover {
+    opacity: 0.91;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.55);
+}
+
+button[type="submit"]:not(.resend):active {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ── "Didn't receive?" row ── */
+body > p:nth-of-type(2) {
+    margin-top: 16px;
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+}
+
+/* ── Resend Button ── */
+button.resend {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    padding: 0;
+    border-bottom: 1.5px solid rgba(255,255,255,0.5);
+    transition: border-color 0.2s;
+    vertical-align: baseline;
+}
+
+button.resend:hover { border-color: #ffffff; }
+
+/* ── Back link ── */
+body > p:last-of-type {
+    margin-top: 12px;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+body > p:last-of-type a {
+    color: rgba(255,255,255,0.85);
+    text-decoration: none;
+    border-bottom: 1.5px solid rgba(255,255,255,0.4);
+    transition: color 0.2s, border-color 0.2s;
+}
+
+body > p:last-of-type a:hover {
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    form:not([action]) { padding: 28px 18px 22px; }
+    h2 { font-size: 1.5rem; }
+    input[type="text"] { font-size: 1.5rem; letter-spacing: 0.4em; }
+}

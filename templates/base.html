@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Grapsy{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #f0f7ff;
+    --card: #fff;
+    --border: #daeaf7;
+    --text: #0d1b2a;
+    --muted: #7a99b0;
+    --accent: #1da1e0;
+    --accent2: #0d7fc4;
+    --grad: linear-gradient(135deg,#29b6f6,#0d7fc4);
+    --red: #ef4444;
+    --nav-h: 54px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{text-decoration:none;color:inherit}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:200}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.4rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:flex;align-items:center;gap:8px}
+.nav-logo img{width:28px;height:28px;border-radius:7px}
+.nav-search{display:flex;align-items:center;gap:8px;background:#f0f4f8;border-radius:10px;padding:7px 14px;width:200px;transition:.2s}
+.nav-search:focus-within{background:#e0f0fa}
+.nav-search input{border:none;background:transparent;outline:none;font-family:'DM Sans',sans-serif;font-size:.875rem;width:100%;color:var(--text)}
+.nav-search input::placeholder{color:var(--muted)}
+.nav-icons{display:flex;align-items:center;gap:14px}
+.nav-btn{background:none;border:none;cursor:pointer;color:var(--text);padding:5px;border-radius:8px;display:flex;align-items:center;justify-content:center;position:relative;transition:.15s;text-decoration:none}
+.nav-btn:hover{background:#e8f4fd}
+.nav-btn svg{width:22px;height:22px}
+.nav-btn.active{color:var(--accent)}
+.badge{position:absolute;top:1px;right:1px;background:var(--red);color:#fff;font-size:.6rem;font-weight:700;border-radius:10px;padding:1px 4px;border:1.5px solid #fff;min-width:16px;text-align:center}
+.nav-avatar-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;padding:3px 8px 3px 3px;border-radius:20px;transition:.15s}
+.nav-avatar-wrap:hover{background:#e8f4fd}
+.nav-avatar-img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
+.nav-avatar-username{font-size:.82rem;font-weight:600;color:var(--text);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* FLASH */
+.flashes{position:fixed;top:calc(var(--nav-h)+8px);left:50%;transform:translateX(-50%);z-index:500;display:flex;flex-direction:column;gap:6px;width:min(400px,90vw)}
+.flash{padding:12px 18px;border-radius:10px;font-size:.875rem;font-weight:500;border-left:4px solid;box-shadow:0 4px 16px rgba(0,0,0,.1);animation:slideDown .3s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.success{background:#f0fdf4;color:#166534;border-color:#22c55e}
+.error{background:#fef2f2;color:#991b1b;border-color:#ef4444}
+.warning{background:#fffbeb;color:#92400e;border-color:#f59e0b}
+
+/* MAIN CONTENT */
+main{padding-top:calc(var(--nav-h)+20px);min-height:100vh}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;border:none;transition:.2s}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 4px 14px rgba(29,161,224,.35)}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.btn-outline:hover{background:#e8f4fd}
+.btn-sm{padding:6px 14px;font-size:.8rem;border-radius:7px}
+.btn-danger{background:#fef2f2;color:var(--red);border:1.5px solid #fca5a5}
+.btn-danger:hover{background:#fee2e2}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+
+/* AVATAR */
+.avatar{border-radius:50%;object-fit:cover;display:block}
+.avatar-ring{border-radius:50%;padding:2.5px;background:linear-gradient(45deg,#29b6f6,#0d47a1,#00e5ff)}
+.avatar-ring img{border-radius:50%;border:2.5px solid #fff;display:block;object-fit:cover}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:#fff;border-radius:18px;width:100%;max-width:400px;padding:32px 28px 24px;box-shadow:0 24px 60px rgba(0,0,0,.2);transform:translateY(20px) scale(.97);transition:.25s;opacity:0}
+.modal-overlay.open .modal-box{transform:translateY(0) scale(1);opacity:1}
+.modal-title{font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:6px}
+.modal-sub{font-size:.8rem;color:var(--muted);text-align:center;margin-bottom:20px}
+
+/* FORM */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.form-input{width:100%;padding:11px 14px;font-size:.95rem;font-family:'DM Sans',sans-serif;color:var(--text);background:#f9fafb;border:1.5px solid var(--border);border-radius:9px;outline:none;transition:.2s}
+.form-input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(29,161,224,.15)}
+textarea.form-input{resize:vertical;min-height:80px}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes heartPop{0%{transform:scale(1)}40%{transform:scale(1.4)}70%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+
+/* CREATE DROPDOWN */
+.create-wrap{position:relative}
+.create-dropdown{
+    position:absolute;top:calc(100% + 10px);right:0;
+    background:#fff;border:1px solid var(--border);
+    border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.14);
+    width:210px;overflow:hidden;z-index:300;
+    opacity:0;pointer-events:none;transform:translateY(-8px) scale(.97);
+    transition:opacity .2s,transform .2s;
+}
+.create-dropdown.open{opacity:1;pointer-events:all;transform:translateY(0) scale(1)}
+.create-option{display:flex;align-items:center;gap:12px;padding:13px 16px;color:var(--text);transition:.15s;text-decoration:none}
+.create-option:hover{background:#f0f9ff}
+.create-option:not(:last-child){border-bottom:1px solid var(--border)}
+.create-icon{font-size:1.4rem;flex-shrink:0}
+.create-opt-title{font-size:.875rem;font-weight:700}
+.create-opt-sub{font-size:.73rem;color:var(--muted);margin-top:1px}
+
+/* RESPONSIVE */
+@media(max-width:680px){.nav-search{display:none}.nav-avatar-username{display:none}}
+</style>
+{% block head %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="{{ url_for('home') }}">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="G">
+    Grapsy
+  </a>
+  <form class="nav-search" action="{{ url_for('search') }}" method="get">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#7a99b0" stroke-width="2" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" name="q" placeholder="Search people…" value="{{ request.args.get('q','') }}">
+  </form>
+  <div class="nav-icons">
+    <a class="nav-btn {% if request.endpoint=='home' %}active{% endif %}" href="{{ url_for('home') }}" title="Home">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    </a>
+    <a class="nav-btn {% if request.endpoint=='reels' %}active{% endif %}" href="{{ url_for('reels') }}" title="Reels">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="4"/><polygon points="10,8 16,12 10,16"/></svg>
+    </a>
+    <!-- Create Dropdown -->
+    <div class="create-wrap" id="createWrap">
+      <button class="nav-btn" onclick="toggleCreate(event)" title="Create">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      </button>
+      <div class="create-dropdown" id="createDropdown">
+        <a href="{{ url_for('create_post') }}" class="create-option">
+          <span class="create-icon">📸</span>
+          <div><div class="create-opt-title">Post</div><div class="create-opt-sub">Photo or video</div></div>
+        </a>
+        <a href="{{ url_for('create_reel') }}" class="create-option">
+          <span class="create-icon">🎬</span>
+          <div><div class="create-opt-title">Reel</div><div class="create-opt-sub">Short video</div></div>
+        </a>
+        <a href="{{ url_for('create_story') }}" class="create-option">
+          <span class="create-icon">✨</span>
+          <div><div class="create-opt-title">Story</div><div class="create-opt-sub">Disappears in 24h</div></div>
+        </a>
+      </div>
+    </div>
+    <a class="nav-btn {% if request.endpoint in ['messages','chat'] %}active{% endif %}" href="{{ url_for('messages') }}" title="Messages">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      {% if unread_count and unread_count > 0 %}<span class="badge">{{ unread_count }}</span>{% endif %}
+    </a>
+    <!-- Profile Dropdown -->
+    <div class="create-wrap" id="profileWrap">
+      <button class="nav-avatar-wrap" onclick="toggleProfile(event)">
+        <img src="{{ pic_url(me) }}" alt="avatar" class="nav-avatar-img" id="navAvatar">
+        <span class="nav-avatar-username">{{ me.username }}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" style="margin-left:2px;color:var(--muted)"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="create-dropdown" id="profileDropdown" style="right:0;left:auto;min-width:190px">
+        <a href="{{ url_for('profile', username=me.username) }}" class="create-option">
+          <span class="create-icon">👤</span>
+          <div><div class="create-opt-title">Profile</div><div class="create-opt-sub">View your page</div></div>
+        </a>
+        <a href="{{ url_for('edit_profile') }}" class="create-option">
+          <span class="create-icon">✏️</span>
+          <div><div class="create-opt-title">Edit Profile</div><div class="create-opt-sub">Update info & photo</div></div>
+        </a>
+        <a href="{{ url_for('messages') }}" class="create-option">
+          <span class="create-icon">💬</span>
+          <div><div class="create-opt-title">Messages</div><div class="create-opt-sub">Your DMs</div></div>
+        </a>
+        <a href="{{ url_for('logout') }}" class="create-option" style="color:#ef4444">
+          <span class="create-icon">🚪</span>
+          <div><div class="create-opt-title" style="color:#ef4444">Log Out</div><div class="create-opt-sub">See you soon!</div></div>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flashes">
+  {% for cat, msg in messages %}
+  <div class="flash {{ cat }}">{{ msg }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<script>
+// Auto-hide flash messages
+document.querySelectorAll('.flash').forEach(el => {
+  setTimeout(() => {
+    el.style.transition = 'opacity .4s, max-height .4s, margin .4s';
+    el.style.opacity = '0'; el.style.maxHeight = '0'; el.style.margin = '0';
+    setTimeout(() => el.remove(), 400);
+  }, 3500);
+});
+// Create dropdown
+function toggleCreate(e) {
+  e.stopPropagation();
+  document.getElementById('createDropdown').classList.toggle('open');
+  document.getElementById('profileDropdown')?.classList.remove('open');
+}
+// Profile dropdown
+function toggleProfile(e) {
+  e.stopPropagation();
+  document.getElementById('profileDropdown').classList.toggle('open');
+  document.getElementById('createDropdown')?.classList.remove('open');
+}
+document.addEventListener('click', () => {
+  document.getElementById('createDropdown')?.classList.remove('open');
+  document.getElementById('profileDropdown')?.classList.remove('open');
+});
+
+// Close modals on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }} — Grapsy{% endblock %}
+{% block head %}
+<style>
+.profile-page{max-width:900px;margin:0 auto;padding:0 16px 40px}
+.profile-header{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;display:flex;align-items:center;gap:32px;margin-bottom:24px;animation:fadeUp .4s ease}
+.profile-pic-wrap{position:relative;flex-shrink:0}
+.profile-pic{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);box-shadow:0 0 0 4px rgba(29,161,224,.15)}
+.profile-info{flex:1}
+.profile-top{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+.profile-username{font-size:1.4rem;font-weight:700}
+.profile-stats{display:flex;gap:28px;margin-bottom:10px}
+.stat{text-align:center}
+.stat-num{font-size:1.1rem;font-weight:700}
+.stat-label{font-size:.75rem;color:var(--muted)}
+.profile-name{font-weight:600;margin-bottom:4px}
+.profile-bio{font-size:.875rem;color:var(--muted);line-height:1.5}
+
+.posts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border-radius:12px;overflow:hidden}
+.grid-item{aspect-ratio:1;position:relative;overflow:hidden;cursor:pointer}
+.grid-item img,.grid-item video{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.grid-item:hover img,.grid-item:hover video{transform:scale(1.05)}
+.grid-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;display:flex;align-items:center;justify-content:center;gap:18px;color:#fff;font-weight:700;transition:.2s}
+.grid-item:hover .grid-overlay{opacity:1}
+.grid-stat{display:flex;align-items:center;gap:5px;font-size:.9rem}
+
+.empty-grid{grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)}
+
+@media(max-width:600px){
+  .profile-header{flex-direction:column;text-align:center}
+  .profile-top{justify-content:center}
+  .profile-stats{justify-content:center}
+  .posts-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+  <div class="profile-header">
+    <div class="profile-pic-wrap">
+      <img class="profile-pic" src="{{ pic_url(user) }}" alt="{{ user.username }}">
+    </div>
+    <div class="profile-info">
+      <div class="profile-top">
+        <span class="profile-username">{{ user.username }}</span>
+        {% if user.username == me.username %}
+          <a href="{{ url_for('edit_profile') }}" class="btn btn-outline btn-sm">Edit Profile</a>
+          <a href="{{ url_for('logout') }}" class="btn btn-sm" style="color:var(--muted)">Log out</a>
+        {% else %}
+          <button class="btn {% if i_follow %}btn-outline{% else %}btn-primary{% endif %} btn-sm"
+                  id="follow-btn" data-uid="{{ user.id }}" onclick="followUser(this)">
+            {{ 'Following' if i_follow else 'Follow' }}
+          </button>
+          <a href="{{ url_for('chat', other_id=user.id) }}" class="btn btn-outline btn-sm">Message</a>
+        {% endif %}
+      </div>
+      <div class="profile-stats">
+        <div class="stat"><div class="stat-num">{{ posts|length }}</div><div class="stat-label">Posts</div></div>
+        <div class="stat"><div class="stat-num" id="followers-count">{{ followers }}</div><div class="stat-label">Followers</div></div>
+        <div class="stat"><div class="stat-num">{{ following_count }}</div><div class="stat-label">Following</div></div>
+      </div>
+      <div class="profile-name">{{ user.name }}</div>
+      {% if user.bio %}<div class="profile-bio">{{ user.bio }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="posts-grid card">
+    {% if posts %}
+      {% for post in posts %}
+      <div class="grid-item">
+        {% if post.media_type == 'video' %}
+        <video src="{{ url_for('static', filename='uploads/posts/' + post.media_file) }}" muted></video>
+        {% else %}
+        <img src="{{ url_for('static', filename='uploads/posts/' + post.media_file) }}" alt="post" loading="lazy">
+        {% endif %}
+        <div class="grid-overlay">
+          <div class="grid-stat">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            {{ post.like_count }}
+          </div>
+          <div class="grid-stat">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            {{ post.comment_count }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-grid">
+        <div style="font-size:2.5rem;margin-bottom:10px">📷</div>
+        <p>No posts yet.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function followUser(btn) {
+  const uid = btn.dataset.uid;
+  const res = await fetch(`/follow/${uid}`, {method:'POST'});
+  const data = await res.json();
+  if (data.following) {
+    btn.textContent = 'Following';
+    btn.className = 'btn btn-outline btn-sm';
+  } else {
+    btn.textContent = 'Follow';
+    btn.className = 'btn btn-primary btn-sm';
+  }
+  document.getElementById('followers-count').textContent = data.followers_count;
+}
+</script>
+{% endblock %}

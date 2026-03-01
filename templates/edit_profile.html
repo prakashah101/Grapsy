@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — Grapsy{% endblock %}
+{% block head %}
+<style>
+.edit-page{max-width:520px;margin:0 auto;padding:0 16px 40px}
+.edit-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;animation:fadeUp .4s ease}
+.edit-card h2{font-size:1.2rem;font-weight:700;margin-bottom:24px}
+.pic-edit-row{display:flex;align-items:center;gap:20px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.current-pic{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)}
+.pic-edit-info label{font-size:.875rem;font-weight:600;color:var(--accent);cursor:pointer}
+.pic-edit-info p{font-size:.75rem;color:var(--muted);margin-top:4px}
+.pic-edit-info input{display:none}
+</style>
+{% endblock %}
+{% block content %}
+<div class="edit-page">
+  <div class="edit-card">
+    <h2>Edit Profile</h2>
+    <form method="POST" enctype="multipart/form-data">
+      <div class="pic-edit-row">
+        <img src="{{ pic_url(me) }}" alt="avatar" class="current-pic" id="picPreview">
+        <div class="pic-edit-info">
+          <label for="picInput">Change profile photo</label>
+          <p>JPG, PNG, GIF or WEBP · Max 5MB</p>
+          <input type="file" name="profile_pic" id="picInput" accept="image/*" onchange="previewPic(this)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input class="form-input" type="text" name="name" value="{{ me.name }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <textarea class="form-input" name="bio" placeholder="Tell the world about yourself…" rows="3">{{ me.bio or '' }}</textarea>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn btn-primary" style="flex:1">Save Changes</button>
+        <a href="{{ url_for('profile', username=me.username) }}" class="btn btn-outline" style="flex:1;text-align:center">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function previewPic(input) {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById('picPreview').src = URL.createObjectURL(file);
+}
+</script>
+{% endblock %}

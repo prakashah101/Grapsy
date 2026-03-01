@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify OTP</title>
+   <link rel="stylesheet" href="{{ url_for('static', filename='verify_otp.css') }}">
+</head>
+<body>
+    <h2>Verify Your Email</h2>
+    <p>An OTP has been sent to <strong>{{ session.signup_data.email if session.signup_data else 'your email' }}</strong></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <label>Enter 6-digit OTP<br>
+            <input type="text" name="otp" maxlength="6" pattern="[0-9]{6}" required placeholder="------">
+        </label><br>
+        <button type="submit">Verify</button>
+    </form>
+
+    <p>Didn't receive the code?
+        <form method="POST" action="{{ url_for('resend_otp') }}" style="display:inline;">
+            <button type="submit" class="resend">Resend OTP</button>
+        </form>
+    </p>
+
+    <p><a href="{{ url_for('signup') }}">← Back to signup</a></p>
+</body>
+</html>

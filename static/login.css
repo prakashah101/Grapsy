@@ -1,0 +1,173 @@
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* ── Logo / Brand Header ── */
+h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    margin-bottom: 24px;
+    user-select: none;
+}
+
+h1 img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+}
+
+/* ── Card ── */
+form {
+    background: #ffffff;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    padding: 36px 32px 28px;
+}
+
+form::before {
+    content: 'Welcome back';
+    display: block;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+}
+
+form::after {
+    content: '';
+    display: block;
+    width: 44px;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+    margin: 0 auto 24px;
+}
+
+/* ── Flash Messages ── */
+.flash {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-left: 4px solid;
+
+    /* smooth auto-hide transition (driven by JS) */
+    overflow: hidden;
+    max-height: 100px;
+    opacity: 1;
+    transition: opacity 0.5s ease, max-height 0.5s ease, margin 0.5s ease;
+}
+
+.success { background: #f0fdf4; color: #166534; border-color: #22c55e; }
+.error   { background: #fef2f2; color: #991b1b; border-color: #ef4444; }
+.warning { background: #fffbeb; color: #92400e; border-color: #f59e0b; }
+
+/* ── Labels & Inputs ── */
+label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    margin-top: 16px;
+}
+
+label:first-of-type { margin-top: 0; }
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 0.95rem;
+    color: #1f2937;
+    background: #f9fafb;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+input:hover  { border-color: #a5b4fc; }
+input:focus  {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.18);
+}
+
+/* ── Submit Button ── */
+button[type="submit"] {
+    width: 100%;
+    padding: 13px;
+    margin-top: 24px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+button[type="submit"]:hover {
+    opacity: 0.91;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.55);
+}
+
+button[type="submit"]:active {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ── Footer link ── */
+p {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.85);
+}
+
+p a {
+    color: #ffffff;
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1.5px solid rgba(255,255,255,0.5);
+    transition: border-color 0.2s;
+}
+
+p a:hover { border-color: #ffffff; }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    form { padding: 28px 18px 22px; }
+    h1   { font-size: 1.6rem; }
+}

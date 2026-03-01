@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+<body>
+    <h1>
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Grapsy logo">
+        GRAPSY
+      </h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <label>Username<br><input type="text" name="username" required></label><br>
+        <label>Password<br><input type="password" name="password" required></label><br>
+        <button type="submit">Log In</button>
+    </form>
+
+
+    <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
+
+   <script>
+  // Automatically hide flash messages after 3 seconds
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const flashMessages = document.querySelectorAll('.flash');
+    flashMessages.forEach(msg => {
+      setTimeout(() => {
+        // Animate height, margin, and opacity to 0
+        msg.style.opacity = '0';
+        msg.style.maxHeight = '0';
+        msg.style.margin = '0';
+        // Remove element completely after animation
+        setTimeout(() => {
+          msg.remove();
+        }, 500); // match transition duration
+      }, 3000); // 3 seconds before disappearing
+    });
+  });
+</script>
+
+</body>
+</html>

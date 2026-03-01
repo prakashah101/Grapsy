@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Upload Reel — Grapsy{% endblock %}
+{% block head %}
+<style>
+.create-page{max-width:540px;margin:0 auto;padding:0 16px 40px}
+.create-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;animation:fadeUp .4s ease}
+.create-card h2{font-size:1.2rem;font-weight:700;margin-bottom:24px}
+.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;transition:.2s;position:relative;overflow:hidden;margin-bottom:20px}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:#f0f9ff}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-zone-icon{font-size:2.5rem;margin-bottom:8px}
+.drop-zone-label{font-size:.9rem;font-weight:600;color:var(--accent)}
+.drop-zone-hint{font-size:.78rem;color:var(--muted);margin-top:4px}
+.preview-video{width:100%;max-height:360px;object-fit:cover;border-radius:12px;margin-bottom:16px;display:none}
+</style>
+{% endblock %}
+{% block content %}
+<div class="create-page">
+  <div class="create-card">
+    <h2>🎬 Upload a Reel</h2>
+    <form method="POST" enctype="multipart/form-data">
+      <div class="drop-zone" id="dz">
+        <input type="file" name="video" accept="video/*" onchange="previewVid(this)">
+        <div class="drop-zone-icon">🎥</div>
+        <div class="drop-zone-label">Click or drag a video</div>
+        <div class="drop-zone-hint">MP4 / MOV / WEBM · Max 50MB</div>
+      </div>
+      <video class="preview-video" id="vidPreview" controls></video>
+      <div class="form-group">
+        <label class="form-label">Caption</label>
+        <textarea class="form-input" name="caption" placeholder="Describe your reel…" rows="3"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Upload Reel</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function previewVid(input) {
+  const file = input.files[0]; if (!file) return;
+  const vid = document.getElementById('vidPreview');
+  vid.src = URL.createObjectURL(file);
+  vid.style.display = 'block';
+  document.getElementById('dz').style.display = 'none';
+}
+</script>
+{% endblock %}

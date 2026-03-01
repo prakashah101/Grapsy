@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Add Story — Grapsy{% endblock %}
+{% block head %}
+<style>
+.create-page{max-width:480px;margin:0 auto;padding:0 16px 40px}
+.story-create-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;animation:fadeUp .4s ease}
+.story-create-card h2{font-size:1.2rem;font-weight:700;margin-bottom:6px}
+.story-create-card .subtitle{font-size:.82rem;color:var(--muted);margin-bottom:24px}
+
+.story-preview{width:100%;aspect-ratio:9/16;background:#0d1b2a;border-radius:14px;overflow:hidden;position:relative;margin-bottom:20px;display:none;max-height:420px}
+.story-preview img,.story-preview video{width:100%;height:100%;object-fit:cover;display:block}
+.story-preview-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:20px 16px 16px;color:#fff;font-size:.85rem}
+
+.drop-zone{border:2px dashed var(--border);border-radius:14px;padding:50px 20px;text-align:center;cursor:pointer;transition:.2s;position:relative;overflow:hidden;background:#fafcff;margin-bottom:20px}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:#edf6ff}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-zone-emoji{font-size:2.8rem;margin-bottom:10px}
+.drop-zone-title{font-size:.95rem;font-weight:700;color:var(--accent)}
+.drop-zone-hint{font-size:.75rem;color:var(--muted);margin-top:5px;line-height:1.5}
+
+.story-tip{background:#f0f9ff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:.78rem;color:var(--muted);margin-bottom:20px;display:flex;gap:8px;align-items:flex-start}
+.story-tip span{font-size:1rem}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-page">
+  <div class="story-create-card">
+    <h2>✨ Add to Your Story</h2>
+    <p class="subtitle">Visible to your followers for 24 hours</p>
+
+    <form method="POST" enctype="multipart/form-data" id="storyForm">
+      <!-- Drop zone -->
+      <div class="drop-zone" id="dropZone">
+        <input type="file" name="media" id="mediaInput" accept="image/*,video/*" onchange="previewStory(this)">
+        <div class="drop-zone-emoji">🌅</div>
+        <div class="drop-zone-title">Tap to add a photo or video</div>
+        <div class="drop-zone-hint">JPG · PNG · MP4 · MOV<br>Max 50MB</div>
+      </div>
+
+      <!-- Preview -->
+      <div class="story-preview" id="storyPreview">
+        <div id="previewMedia"></div>
+        <div class="story-preview-caption" id="captionPreview"></div>
+        <button type="button" onclick="resetStory()"
+                style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Caption (optional)</label>
+        <input class="form-input" type="text" name="caption" id="captionInput"
+               placeholder="Add a caption to your story…"
+               oninput="document.getElementById('captionPreview').textContent = this.value">
+      </div>
+
+      <div class="story-tip">
+        <span>⏳</span>
+        <span>Stories automatically disappear after 24 hours and are visible only to your followers.</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:1rem">
+        Share Story
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewStory(input) {
+  const file = input.files[0]; if (!file) return;
+  const drop    = document.getElementById('dropZone');
+  const preview = document.getElementById('storyPreview');
+  const media   = document.getElementById('previewMedia');
+  const url     = URL.createObjectURL(file);
+  drop.style.display = 'none';
+  preview.style.display = 'block';
+  if (file.type.startsWith('video/')) {
+    media.innerHTML = `<video src="${url}" autoplay muted loop style="width:100%;height:100%;object-fit:cover"></video>`;
+  } else {
+    media.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;
+  }
+}
+
+function resetStory() {
+  document.getElementById('mediaInput').value = '';
+  document.getElementById('previewMedia').innerHTML = '';
+  document.getElementById('storyPreview').style.display = 'none';
+  document.getElementById('dropZone').style.display = 'block';
+}
+
+// Drag & drop
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f) { document.getElementById('mediaInput').files = e.dataTransfer.files; previewStory(document.getElementById('mediaInput')); }
+});
+</script>
+{% endblock %}

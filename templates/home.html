@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% block title %}Grapsy — Home{% endblock %}
+
+{% block head %}
+<style>
+.layout{max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr 300px;gap:28px;padding:0 16px 40px}
+.feed{display:flex;flex-direction:column;gap:20px}
+
+/* STORIES */
+.stories-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 4px 12px 14px}
+.stories-row{display:flex;gap:14px;overflow-x:auto;padding-right:14px;scrollbar-width:none}
+.stories-row::-webkit-scrollbar{display:none}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0;animation:fadeUp .35s ease both}
+.story-ring-wrap{width:58px;height:58px;border-radius:50%;padding:2.5px;background:linear-gradient(45deg,#29b6f6,#0d47a1,#00e5ff);transition:.2s}
+.story-ring-wrap:hover{transform:scale(1.07)}
+.story-ring-wrap.seen{background:#d1d5db}
+.story-inner{width:100%;height:100%;border-radius:50%;border:2.5px solid #fff;object-fit:cover;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:#fff}
+.story-name{font-size:.7rem;font-weight:500;max-width:58px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* POST CARD */
+.post-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:fadeUp .4s ease both}
+.post-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px}
+.post-user{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;color:inherit}
+.post-avatar-wrap{position:relative;width:38px;height:38px}
+.post-avatar-wrap img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
+.post-username{font-size:.875rem;font-weight:600}
+.post-location{font-size:.72rem;color:var(--muted)}
+.post-more-btn{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;transition:.15s}
+.post-more-btn:hover{background:#f0f4f8;color:var(--text)}
+
+.post-media{width:100%;display:block;max-height:600px;object-fit:cover}
+video.post-media{background:#000}
+
+.post-actions{display:flex;align-items:center;padding:10px 14px 4px;gap:12px}
+.action-btn{background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;padding:5px 7px;border-radius:8px;transition:.15s}
+.action-btn:hover{background:#f0f4f8}
+.action-btn:active{transform:scale(.93)}
+.action-btn.liked{color:var(--red)}
+.action-btn.liked svg{fill:var(--red);stroke:var(--red)}
+.action-btn.saved svg{fill:var(--accent);stroke:var(--accent)}
+.spacer{flex:1}
+.likes-count{padding:0 14px;font-size:.875rem;font-weight:600}
+.post-caption{padding:2px 14px 6px;font-size:.875rem;line-height:1.5}
+.post-caption .cap-user{font-weight:700;margin-right:4px}
+.view-comments-btn{padding:0 14px 4px;font-size:.82rem;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;text-align:left}
+.view-comments-btn:hover{color:var(--text)}
+.post-time{padding:0 14px 10px;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.comment-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border)}
+.comment-row img{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.comment-input{flex:1;border:none;outline:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--text)}
+.comment-input::placeholder{color:var(--muted)}
+.comment-post-btn{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:700;color:var(--accent);cursor:pointer;opacity:.4;transition:.2s}
+.comment-post-btn.active{opacity:1}
+
+/* COMMENTS PANEL */
+.comments-panel{display:none;padding:8px 14px 12px;border-top:1px solid var(--border);max-height:220px;overflow-y:auto}
+.comments-panel.open{display:block}
+.comment-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
+.comment-item img{width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-top:2px}
+.comment-item-body{font-size:.82rem;line-height:1.4}
+.comment-item-body strong{font-weight:700;margin-right:4px}
+.comment-ts{font-size:.68rem;color:var(--muted);margin-top:2px}
+
+/* EMPTY STATE */
+.empty-feed{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-feed .emoji{font-size:3rem;margin-bottom:12px}
+.empty-feed h3{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:6px}
+
+/* SIDEBAR */
+.sidebar{position:sticky;top:calc(54px + 20px);display:flex;flex-direction:column;gap:20px}
+.sidebar-profile{display:flex;align-items:center;gap:12px}
+.sidebar-profile img{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+.sidebar-username{font-size:.9rem;font-weight:700}
+.sidebar-name{font-size:.78rem;color:var(--muted)}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.section-header span{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.section-header a{font-size:.78rem;font-weight:700;color:var(--text)}
+.section-header a:hover{color:var(--accent)}
+.sug-item{display:flex;align-items:center;gap:10px;margin-bottom:12px;animation:fadeUp .35s ease both}
+.sug-item img{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.sug-info{flex:1;min-width:0}
+.sug-username{font-size:.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sug-reason{font-size:.72rem;color:var(--muted)}
+.follow-btn{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;transition:.15s}
+.follow-btn:hover{color:var(--accent2)}
+.follow-btn.following{color:var(--muted);font-weight:500}
+.sidebar-footer{font-size:.68rem;color:var(--muted);line-height:1.9}
+.sidebar-footer a{color:var(--muted);margin-right:6px}
+.sidebar-footer a:hover{color:var(--text)}
+
+@media(max-width:700px){.layout{grid-template-columns:1fr}.sidebar{display:none}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="layout">
+  <div class="feed">
+
+    <!-- STORIES -->
+    <div class="stories-card">
+      <div class="stories-row">
+        <a class="story-item" href="{{ url_for('create_story') }}" style="animation-delay:.05s;text-decoration:none;color:inherit">
+          <div class="story-ring-wrap seen" style="background:linear-gradient(135deg,#29b6f6,#0d7fc4)">
+            <div class="story-inner" style="background:var(--grad);font-size:1.5rem">+</div>
+          </div>
+          <span class="story-name">Add story</span>
+        </a>
+        {% for s in stories %}
+        <a class="story-item" href="{{ url_for('view_story', user_id=s.id) }}" style="animation-delay:{{ loop.index * 0.07 }}s;text-decoration:none;color:inherit">
+          <div class="story-ring-wrap">
+            <img class="story-inner" src="{{ pic_url(s) }}" alt="{{ s.username }}">
+          </div>
+          <span class="story-name">{{ s.username }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- POSTS -->
+    {% if posts %}
+      {% for post in posts %}
+      <div class="post-card" style="animation-delay:{{ loop.index * 0.08 }}s">
+        <div class="post-header">
+          <a class="post-user" href="{{ url_for('profile', username=post.username) }}">
+            <div class="post-avatar-wrap">
+              <img src="{{ pic_url(post) }}" alt="{{ post.username }}">
+            </div>
+            <div>
+              <div class="post-username">{{ post.username }}</div>
+              <div class="post-location">{{ post.created_at[:10] }}</div>
+            </div>
+          </a>
+          {% if post.username == me.username %}
+          <form action="{{ url_for('delete_post', post_id=post.id) }}" method="post" style="display:inline">
+            <button class="post-more-btn" title="Delete post">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            </button>
+          </form>
+          {% else %}
+          <button class="post-more-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          </button>
+          {% endif %}
+        </div>
+
+        {% if post.media_type == 'video' %}
+        <video class="post-media" controls>
+          <source src="{{ url_for('static', filename='uploads/posts/' + post.media_file) }}">
+        </video>
+        {% else %}
+        <img class="post-media" src="{{ url_for('static', filename='uploads/posts/' + post.media_file) }}" alt="post" loading="lazy">
+        {% endif %}
+
+        <div class="post-actions">
+          <button class="action-btn {% if post.i_liked %}liked{% endif %}" data-post-id="{{ post.id }}" onclick="toggleLike(this,'post')">
+            <svg width="22" height="22" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="{% if post.i_liked %}currentColor{% else %}none{% endif %}">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+          <button class="action-btn" onclick="toggleComments(this, {{ post.id }})">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </button>
+          <a class="action-btn" href="{{ url_for('chat', other_id=post.user_id) if post.username != me.username else '#' }}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </a>
+          <span class="spacer"></span>
+          <button class="action-btn" onclick="toggleSave(this)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </button>
+        </div>
+
+        <div class="likes-count" id="likes-post-{{ post.id }}">{{ post.like_count }} like{{ 's' if post.like_count != 1 }}</div>
+        {% if post.caption %}
+        <div class="post-caption"><a href="{{ url_for('profile', username=post.username) }}" class="cap-user">{{ post.username }}</a>{{ post.caption }}</div>
+        {% endif %}
+        {% if post.comment_count > 0 %}
+        <button class="view-comments-btn" onclick="toggleComments(this.nextElementSibling ? this : this, {{ post.id }})">
+          View all {{ post.comment_count }} comment{{ 's' if post.comment_count != 1 }}
+        </button>
+        {% endif %}
+        <div class="post-time">{{ post.created_at[:16] }}</div>
+
+        <!-- Comments panel -->
+        <div class="comments-panel" id="comments-{{ post.id }}"></div>
+
+        <!-- Comment input -->
+        <div class="comment-row">
+          <img src="{{ pic_url(me) }}" alt="me">
+          <input class="comment-input" type="text" placeholder="Add a comment…"
+                 oninput="this.nextElementSibling.classList.toggle('active', this.value.trim().length > 0)"
+                 onkeydown="if(event.key==='Enter'){submitComment(this, {{ post.id }})}">
+          <button class="comment-post-btn" onclick="submitComment(this.previousElementSibling, {{ post.id }})">Post</button>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-feed card" style="padding:60px 20px">
+        <div class="emoji">📸</div>
+        <h3>Your feed is empty</h3>
+        <p style="margin-bottom:20px;color:var(--muted)">Follow people or share your first post to get started.</p>
+        <a href="{{ url_for('create_post') }}" class="btn btn-primary">Share a Post</a>
+      </div>
+    {% endif %}
+
+  </div><!-- /feed -->
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-profile">
+      <a href="{{ url_for('profile', username=me.username) }}">
+        <img src="{{ pic_url(me) }}" alt="me">
+      </a>
+      <div>
+        <div class="sidebar-username"><a href="{{ url_for('profile', username=me.username) }}">{{ me.username }}</a></div>
+        <div class="sidebar-name">{{ me.name }}</div>
+      </div>
+    </div>
+
+    {% if suggested %}
+    <div>
+      <div class="section-header">
+        <span>Suggested for you</span>
+        <a href="{{ url_for('search') }}">See all</a>
+      </div>
+      {% for u in suggested %}
+      <div class="sug-item" style="animation-delay:{{ loop.index * 0.07 }}s">
+        <a href="{{ url_for('profile', username=u.username) }}">
+          <img src="{{ pic_url(u) }}" alt="{{ u.username }}">
+        </a>
+        <div class="sug-info">
+          <a href="{{ url_for('profile', username=u.username) }}" class="sug-username">{{ u.username }}</a>
+          <div class="sug-reason">{{ u.name }}</div>
+        </div>
+        <button class="follow-btn" data-uid="{{ u.id }}" onclick="followUser(this)">Follow</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="sidebar-footer">
+      <div><a href="#">About</a><a href="#">Help</a><a href="#">Privacy</a><a href="#">Terms</a><a href="{{ url_for('logout') }}">Log out</a></div>
+      <p style="margin-top:6px">© 2025 Grapsy</p>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function toggleLike(btn, type) {
+  const id = btn.dataset.postId || btn.dataset.reelId;
+  btn.classList.toggle('liked');
+  const svg = btn.querySelector('svg');
+  svg.setAttribute('fill', btn.classList.contains('liked') ? 'currentColor' : 'none');
+  btn.classList.add('heart-pop');
+  btn.addEventListener('animationend', () => btn.classList.remove('heart-pop'), {once:true});
+  const res = await fetch(`/like/${type}/${id}`, {method:'POST'});
+  const data = await res.json();
+  document.getElementById(`likes-${type}-${id}`).textContent = `${data.count} like${data.count !== 1 ? 's' : ''}`;
+}
+
+async function toggleComments(btn, postId) {
+  const panel = document.getElementById(`comments-${postId}`);
+  if (panel.classList.contains('open')) { panel.classList.remove('open'); return; }
+  panel.classList.add('open');
+  if (panel.dataset.loaded) return;
+  const res = await fetch(`/comments/post/${postId}`);
+  const comments = await res.json();
+  panel.innerHTML = comments.length ? comments.map(c => `
+    <div class="comment-item">
+      <img src="${c.pic}" alt="${c.username}">
+      <div class="comment-item-body"><strong>${c.username}</strong>${c.body}<div class="comment-ts">${c.created_at.slice(0,16)}</div></div>
+    </div>`).join('') : '<p style="color:var(--muted);font-size:.82rem">No comments yet.</p>';
+  panel.dataset.loaded = '1';
+}
+
+async function submitComment(input, postId) {
+  const body = input.value.trim();
+  if (!body) return;
+  const res = await fetch(`/comment/post/${postId}`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({body})
+  });
+  const data = await res.json();
+  const panel = document.getElementById(`comments-${postId}`);
+  panel.classList.add('open');
+  panel.innerHTML += `<div class="comment-item"><img src="${data.pic}" alt="${data.username}"><div class="comment-item-body"><strong>${data.username}</strong>${data.body}</div></div>`;
+  input.value = ''; input.nextElementSibling.classList.remove('active');
+  panel.scrollTop = panel.scrollHeight;
+  delete panel.dataset.loaded;
+}
+
+function toggleSave(btn) {
+  btn.classList.toggle('saved');
+  const svg = btn.querySelector('svg');
+  svg.setAttribute('fill', btn.classList.contains('saved') ? 'var(--accent)' : 'none');
+  svg.setAttribute('stroke', btn.classList.contains('saved') ? 'var(--accent)' : 'currentColor');
+}
+
+async function followUser(btn) {
+  const uid = btn.dataset.uid;
+  const res = await fetch(`/follow/${uid}`, {method:'POST'});
+  const data = await res.json();
+  btn.textContent = data.following ? 'Following' : 'Follow';
+  btn.classList.toggle('following', data.following);
+}
+</script>
+{% endblock %}

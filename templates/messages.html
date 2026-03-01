@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Messages — Grapsy{% endblock %}
+{% block head %}
+<style>
+.msg-page{max-width:820px;margin:0 auto;padding:0 16px 40px}
+.msg-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.msg-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.msg-header h2{font-size:1.1rem;font-weight:700}
+.convo-item{display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;transition:.15s;text-decoration:none;color:inherit;border-bottom:1px solid var(--border)}
+.convo-item:last-child{border-bottom:none}
+.convo-item:hover{background:#f7fbff}
+.convo-avatar{position:relative;flex-shrink:0}
+.convo-avatar img{width:48px;height:48px;border-radius:50%;object-fit:cover}
+.unread-dot{position:absolute;bottom:1px;right:1px;width:12px;height:12px;background:var(--accent);border-radius:50%;border:2px solid #fff}
+.convo-info{flex:1;min-width:0}
+.convo-name{font-weight:600;font-size:.9rem}
+.convo-last{font-size:.8rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.convo-time{font-size:.72rem;color:var(--muted);white-space:nowrap}
+.convo-unread-count{background:var(--accent);color:#fff;font-size:.68rem;font-weight:700;border-radius:10px;padding:2px 7px;margin-left:8px}
+.empty-msgs{text-align:center;padding:60px 20px;color:var(--muted)}
+.start-chat-btn{display:inline-flex;align-items:center;gap:6px}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="msg-page">
+  <div class="msg-card">
+    <div class="msg-header">
+      <h2>Messages</h2>
+      <a href="{{ url_for('search') }}" class="btn btn-primary btn-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Message
+      </a>
+    </div>
+    {% if convos %}
+      {% for u in convos %}
+      <a class="convo-item" href="{{ url_for('chat', other_id=u.id) }}">
+        <div class="convo-avatar">
+          <img src="{{ pic_url(u) }}" alt="{{ u.username }}">
+          {% if u.unread > 0 %}<div class="unread-dot"></div>{% endif %}
+        </div>
+        <div class="convo-info">
+          <div class="convo-name">{{ u.username }}{% if u.unread > 0 %}<span class="convo-unread-count">{{ u.unread }}</span>{% endif %}</div>
+          <div class="convo-last">{{ u.last_msg or 'No messages yet' }}</div>
+        </div>
+        <div class="convo-time">{{ u.last_time[:10] if u.last_time else '' }}</div>
+      </a>
+      {% endfor %}
+    {% else %}
+      <div class="empty-msgs">
+        <div style="font-size:3rem;margin-bottom:12px">💬</div>
+        <h3 style="color:var(--text);margin-bottom:8px">No conversations yet</h3>
+        <p style="margin-bottom:20px">Search for a user to start chatting.</p>
+        <a href="{{ url_for('search') }}" class="btn btn-primary start-chat-btn">Find People</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

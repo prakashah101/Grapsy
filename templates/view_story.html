@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }}'s Story — Grapsy{% endblock %}
+{% block head %}
+<style>
+body{background:#000}
+.story-viewer{position:fixed;inset:0;background:#000;z-index:50;display:flex;align-items:center;justify-content:center}
+.story-media-wrap{position:relative;height:100vh;max-width:420px;width:100%;margin:0 auto}
+.story-media-wrap img,
+.story-media-wrap video{width:100%;height:100%;object-fit:cover;display:block}
+
+/* Progress bars */
+.story-progress{position:absolute;top:0;left:0;right:0;display:flex;gap:4px;padding:12px 12px 0;z-index:10}
+.progress-bar{flex:1;height:3px;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden}
+.progress-bar-fill{height:100%;background:#fff;width:0%;transition:width linear}
+.progress-bar-fill.done{width:100%}
+
+/* Header */
+.story-header{position:absolute;top:24px;left:0;right:0;display:flex;align-items:center;padding:0 14px;z-index:10;gap:10px}
+.story-header img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #fff;flex-shrink:0}
+.story-header-info{flex:1}
+.story-header-username{font-weight:700;font-size:.9rem;color:#fff}
+.story-header-time{font-size:.72rem;color:rgba(255,255,255,.75)}
+.story-close{background:none;border:none;color:#fff;cursor:pointer;padding:6px;margin-left:auto}
+.story-close svg{width:22px;height:22px}
+
+/* Caption */
+.story-caption{position:absolute;bottom:60px;left:0;right:0;text-align:center;color:#fff;font-size:.9rem;padding:0 24px;text-shadow:0 1px 6px rgba(0,0,0,.5);z-index:10}
+
+/* Tap zones */
+.tap-left,.tap-right{position:absolute;top:0;bottom:0;width:40%;z-index:9;cursor:pointer}
+.tap-left{left:0}
+.tap-right{right:0}
+
+/* Nav buttons */
+.story-nav-hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;color:rgba(255,255,255,.5);font-size:.72rem;z-index:10}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="story-viewer" id="storyViewer">
+  <!-- Progress bars -->
+  <div class="story-progress" id="progressBars">
+    {% for s in stories %}
+    <div class="progress-bar" id="bar-{{ loop.index0 }}">
+      <div class="progress-bar-fill {% if loop.index0 < 0 %}done{% endif %}" id="fill-{{ loop.index0 }}"></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Header -->
+  <div class="story-media-wrap" id="mediaWrap">
+    <div class="story-header">
+      <a href="{{ url_for('profile', username=user.username) }}">
+        <img src="{{ pic_url(user) }}" alt="{{ user.username }}">
+      </a>
+      <div class="story-header-info">
+        <div class="story-header-username">{{ user.username }}</div>
+        <div class="story-header-time" id="storyTime"></div>
+      </div>
+      <a href="{{ url_for('home') }}" class="story-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </a>
+    </div>
+
+    <!-- Media container -->
+    <div id="mediaContainer" style="width:100%;height:100%"></div>
+
+    <!-- Caption -->
+    <div class="story-caption" id="storyCaption"></div>
+
+    <!-- Tap to navigate -->
+    <div class="tap-left" onclick="prevStory()"></div>
+    <div class="tap-right" onclick="nextStory()"></div>
+
+    <div class="story-nav-hint">Tap sides to navigate</div>
+  </div>
+</div>
+
+<script>
+const stories = [
+  {% for s in stories %}
+  {
+    url: "{{ url_for('static', filename='uploads/posts/' + s.media_file) }}",
+    type: "{{ s.media_type }}",
+    caption: {{ s.caption | tojson }},
+    time: {{ s.created_at | tojson }}
+  }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+
+let current = 0;
+let timer   = null;
+const DURATION = 5000; // 5s per story
+
+function showStory(idx) {
+  if (idx >= stories.length) { window.location = "{{ url_for('home') }}"; return; }
+  if (idx < 0) idx = 0;
+  current = idx;
+  clearTimeout(timer);
+
+  const s = stories[idx];
+  const container = document.getElementById('mediaContainer');
+
+  // Mark previous bars done, reset current and future
+  stories.forEach((_, i) => {
+    const fill = document.getElementById(`fill-${i}`);
+    if (i < idx)      { fill.style.transition='none'; fill.style.width='100%'; }
+    else if (i === idx){ fill.style.transition='none'; fill.style.width='0%'; }
+    else               { fill.style.transition='none'; fill.style.width='0%'; }
+  });
+
+  // Render media
+  if (s.type === 'video') {
+    container.innerHTML = `<video src="${s.url}" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video>`;
+    const vid = container.querySelector('video');
+    vid.onloadedmetadata = () => startProgress(Math.min(vid.duration * 1000, 15000));
+  } else {
+    container.innerHTML = `<img src="${s.url}" style="width:100%;height:100%;object-fit:cover">`;
+    startProgress(DURATION);
+  }
+
+  document.getElementById('storyCaption').textContent = s.caption || '';
+  document.getElementById('storyTime').textContent = s.time.slice(0,16);
+}
+
+function startProgress(duration) {
+  const fill = document.getElementById(`fill-${current}`);
+  fill.style.transition = `width ${duration}ms linear`;
+  setTimeout(() => fill.style.width = '100%', 50);
+  timer = setTimeout(() => nextStory(), duration);
+}
+
+function nextStory() { showStory(current + 1); }
+function prevStory() { showStory(current - 1); }
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') nextStory();
+  if (e.key === 'ArrowLeft')  prevStory();
+  if (e.key === 'Escape')     window.location = "{{ url_for('home') }}";
+});
+
+showStory(0);
+</script>
+{% endblock %}

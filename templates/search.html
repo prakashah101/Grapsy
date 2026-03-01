@@ -1,0 +1,58 @@
+<!-- ═══════════════════════════════════ search.html ═══ -->
+{% extends "base.html" %}
+{% block title %}Search — Grapsy{% endblock %}
+{% block head %}
+<style>
+.search-page{max-width:600px;margin:0 auto;padding:0 16px 40px}
+.search-bar-big{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:12px 18px;margin-bottom:24px}
+.search-bar-big input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:1rem;color:var(--text);background:transparent}
+.search-bar-big input::placeholder{color:var(--muted)}
+.search-bar-big button{background:var(--grad);color:#fff;border:none;border-radius:9px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer}
+.user-result{display:flex;align-items:center;gap:14px;padding:14px 20px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;animation:fadeUp .3s ease both}
+.user-result img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+.user-result-info{flex:1}
+.user-result-info .username{font-weight:700;font-size:.95rem}
+.user-result-info .name{font-size:.8rem;color:var(--muted)}
+.no-results{text-align:center;padding:40px;color:var(--muted)}
+</style>
+{% endblock %}
+{% block content %}
+<div class="search-page">
+  <form class="search-bar-big" method="get">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" name="q" placeholder="Search by username or name…" value="{{ query }}" autofocus>
+    <button type="submit">Search</button>
+  </form>
+  {% if users %}
+    {% for u in users %}
+    <div class="user-result" style="animation-delay:{{ loop.index * 0.06 }}s">
+      <a href="{{ url_for('profile', username=u.username) }}"><img src="{{ pic_url(u) }}" alt="{{ u.username }}"></a>
+      <div class="user-result-info">
+        <a href="{{ url_for('profile', username=u.username) }}" class="username">{{ u.username }}</a>
+        <div class="name">{{ u.name }}</div>
+      </div>
+      <button class="btn {% if u.i_follow %}btn-outline{% else %}btn-primary{% endif %} btn-sm"
+              data-uid="{{ u.id }}" onclick="followUser(this)">
+        {{ 'Following' if u.i_follow else 'Follow' }}
+      </button>
+      <a href="{{ url_for('chat', other_id=u.id) }}" class="btn btn-outline btn-sm">Message</a>
+    </div>
+    {% endfor %}
+  {% elif query %}
+    <div class="no-results">
+      <div style="font-size:2.5rem;margin-bottom:10px">🔍</div>
+      <p>No users found for "<strong>{{ query }}</strong>"</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function followUser(btn) {
+  const res = await fetch(`/follow/${btn.dataset.uid}`, {method:'POST'});
+  const d   = await res.json();
+  btn.textContent = d.following ? 'Following' : 'Follow';
+  btn.className   = `btn ${d.following ? 'btn-outline' : 'btn-primary'} btn-sm`;
+}
+</script>
+{% endblock %}

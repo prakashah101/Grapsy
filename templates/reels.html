@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Grapsy — Reels{% endblock %}
+{% block head %}
+<style>
+.reels-container{max-width:480px;margin:0 auto;padding:0 12px 40px}
+.reel-card{background:#000;border-radius:16px;overflow:hidden;margin-bottom:20px;position:relative;animation:fadeUp .4s ease both}
+.reel-video{width:100%;max-height:75vh;display:block;object-fit:cover}
+.reel-overlay{position:absolute;bottom:0;left:0;right:0;padding:60px 16px 16px;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff}
+.reel-user{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.reel-user img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #fff}
+.reel-username{font-weight:700;font-size:.9rem}
+.reel-follow-btn{background:rgba(255,255,255,.2);border:1.5px solid #fff;color:#fff;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;border-radius:8px;padding:4px 12px;margin-left:auto;transition:.2s}
+.reel-follow-btn:hover{background:rgba(255,255,255,.35)}
+.reel-follow-btn.following{background:transparent;opacity:.7}
+.reel-caption{font-size:.85rem;opacity:.92;line-height:1.4}
+.reel-actions{position:absolute;right:12px;bottom:80px;display:flex;flex-direction:column;gap:18px;align-items:center}
+.reel-action-btn{background:none;border:none;cursor:pointer;color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;transition:.15s}
+.reel-action-btn:active{transform:scale(.9)}
+.reel-action-btn.liked svg{fill:#ef4444;stroke:#ef4444}
+.reel-action-btn svg{width:28px;height:28px;filter:drop-shadow(0 1px 4px rgba(0,0,0,.4))}
+
+.upload-btn{display:flex;align-items:center;gap:8px;background:var(--grad);color:#fff;border:none;border-radius:12px;padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin:0 auto 24px;box-shadow:0 4px 14px rgba(29,161,224,.35);transition:.2s;text-decoration:none}
+.upload-btn:hover{opacity:.9;transform:translateY(-1px)}
+.empty-reels{text-align:center;padding:60px 20px;color:var(--muted)}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reels-container">
+  <a href="{{ url_for('create_reel') }}" class="upload-btn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Upload a Reel
+  </a>
+
+  {% if reels %}
+    {% for reel in reels %}
+    <div class="reel-card" style="animation-delay:{{ loop.index * 0.1 }}s">
+      <video class="reel-video" loop playsinline onclick="this.paused ? this.play() : this.pause()">
+        <source src="{{ url_for('static', filename='uploads/reels/' + reel.video_file) }}">
+      </video>
+      <div class="reel-overlay">
+        <div class="reel-user">
+          <a href="{{ url_for('profile', username=reel.username) }}">
+            <img src="{{ pic_url(reel) }}" alt="{{ reel.username }}">
+          </a>
+          <span class="reel-username">{{ reel.username }}</span>
+          {% if reel.username != me.username %}
+          <button class="reel-follow-btn {% if reel.i_follow %}following{% endif %}"
+                  data-uid="{{ reel.user_id }}" onclick="followReel(this)">
+            {{ 'Following' if reel.i_follow else 'Follow' }}
+          </button>
+          {% endif %}
+        </div>
+        <div class="reel-caption">{{ reel.caption }}</div>
+      </div>
+      <div class="reel-actions">
+        <button class="reel-action-btn {% if reel.i_liked %}liked{% endif %}"
+                data-reel-id="{{ reel.id }}" onclick="likeReel(this)">
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="{% if reel.i_liked %}#ef4444{% else %}none{% endif %}">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <span id="reel-likes-{{ reel.id }}">{{ reel.like_count }}</span>
+        </button>
+        <a class="reel-action-btn" href="{{ url_for('chat', other_id=reel.user_id) if reel.username != me.username else '#' }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Send
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-reels">
+      <div style="font-size:3rem;margin-bottom:12px">🎬</div>
+      <h3 style="color:var(--text);margin-bottom:6px">No reels yet</h3>
+      <p>Be the first to upload a reel!</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-play reels in view
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    const v = e.target.querySelector('video');
+    if (v) e.isIntersecting ? v.play() : v.pause();
+  });
+}, {threshold: 0.6});
+document.querySelectorAll('.reel-card').forEach(c => observer.observe(c));
+
+async function likeReel(btn) {
+  const id = btn.dataset.reelId;
+  btn.classList.toggle('liked');
+  const svg = btn.querySelector('svg');
+  svg.setAttribute('fill', btn.classList.contains('liked') ? '#ef4444' : 'none');
+  const res = await fetch(`/like/reel/${id}`, {method:'POST'});
+  const data = await res.json();
+  document.getElementById(`reel-likes-${id}`).textContent = data.count;
+}
+
+async function followReel(btn) {
+  const uid = btn.dataset.uid;
+  const res = await fetch(`/follow/${uid}`, {method:'POST'});
+  const data = await res.json();
+  btn.textContent = data.following ? 'Following' : 'Follow';
+  btn.classList.toggle('following', data.following);
+}
+</script>
+{% endblock %}
